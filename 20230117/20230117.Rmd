@@ -1,0 +1,93 @@
+---
+title: "Representation in Art History Texts"
+author: "Logan Piepmeier"
+date: "1/20/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(arthistory)
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(showtext)
+showtext_auto()
+font_add_google('Rock Salt', 'rock')
+
+data(artists)
+
+```
+
+## Gender
+
+```{r, fig.showtext = TRUE}
+gender_rep <- worksgardner %>%
+  group_by(publication_year, artist_gender) %>%
+  summarize(n_artists_in_book = n()) %>% 
+  group_by(publication_year) %>%
+  mutate(pct_artists_in_book = n_artists_in_book / sum(n_artists_in_book)) %>%
+  group_by(artist_gender) %>% 
+  arrange(publication_year) %>% 
+  mutate(
+    width = replace_na(lead(publication_year) - publication_year, 1),
+    center = publication_year + width/2
+  ) %>%
+  ungroup() %>% 
+  mutate(artist_gender = fct_rev(fct_reorder(artist_gender, pct_artists_in_book))) %>%
+  mutate(artist_gender = fct_other(artist_gender, drop = 'N/A', other_level = 'Artist Unknown/Unspecified')) 
+
+
+ggplot(gender_rep) + 
+  geom_bar(aes(x = center, y = pct_artists_in_book, width = width, fill = artist_gender), stat = 'identity') + 
+  scale_fill_manual(values = c('#009F8E', '#FF6C00', 'grey')) + 
+  ylab('Percentage of Artists in Book') + xlab('Year') + 
+  ggtitle('Gender Representation in Gardner’s Art Through the Ages') +
+  theme_minimal()
+```
+
+
+## Gender
+
+```{r, fig.showtext = TRUE}
+race_rep <- worksgardner %>%
+  group_by(publication_year, artist_race) %>%
+  summarize(n_artists_in_book = n()) %>% 
+  group_by(publication_year) %>%
+  mutate(pct_artists_in_book = 100 * n_artists_in_book / sum(n_artists_in_book)) %>%
+  group_by(artist_race) %>% 
+  arrange(publication_year) %>% 
+  mutate(
+    width = replace_na(lead(publication_year) - publication_year, 1),
+    center = publication_year + width/2
+  ) %>%
+  ungroup() %>% 
+  mutate(artist_race = fct_rev(fct_reorder(artist_race, pct_artists_in_book))) %>%
+  mutate(artist_race = fct_other(artist_race, drop = 'N/A', other_level = 'Artist Unknown/Unspecified')) 
+
+ggplot(race_rep) + 
+  geom_bar(aes(x = center, y = pct_artists_in_book, width = width, fill = artist_race), stat = 'identity') + 
+  ylab('Percentage of Artists Included') + xlab('') + 
+  ggtitle(
+    'Racial Representation in Gardner’s "Art Through the Ages"', 
+    subtitle = "The Racial Composition of Artists included in the text's current edition througout time") +
+  labs(caption = "Source: https://saralemus7.github.io/arthistory/") + 
+  scale_x_continuous(breaks = seq(1920, 2020, by = 10), expand = c(0,0)) +
+  scale_y_continuous(n.breaks = 10, expand = c(0,0)) +
+  scale_fill_manual(values = c('#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00', 'grey'), name = 'Artist Race') + 
+  theme_minimal() + 
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.ticks = element_line(),
+    text = element_text(family = 'rock'),
+    plot.title = element_text(hjust = 0.5),
+    plot.subtitle = element_text(hjust = 0.5),
+    plot.caption = element_text(size = )
+  ) 
+
+```
+  
